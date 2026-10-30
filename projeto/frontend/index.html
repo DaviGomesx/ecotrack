@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoTrack | Pontos de coleta</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topo">
+    <div><span class="marca">♻ EcoTrack</span><p>Descarte consciente começa com informação.</p></div>
+    <button id="usuarioLogado" class="usuario-logado" type="button" title="Editar minha conta"></button>
+  </header>
+  <main>
+    <section id="painelAuth" class="cartao auth">
+      <h1>Bem-vindo ao EcoTrack</h1>
+      <p>Entre ou crie uma conta para encontrar pontos de coleta.</p>
+      <div class="abas">
+        <button id="abaLogin" class="aba ativa" type="button">Entrar</button>
+        <button id="abaRegistro" class="aba" type="button">Criar conta</button>
+      </div>
+      <form id="formAuth">
+        <label id="labelNome" for="nome">Nome</label>
+        <input id="nome" autocomplete="name" placeholder="Seu nome">
+        <label for="email">E-mail</label>
+        <input id="email" type="email" required autocomplete="email" placeholder="voce@email.com">
+        <label for="senha">Senha</label>
+        <input id="senha" type="password" required minlength="6" autocomplete="current-password" placeholder="Mínimo de 6 caracteres">
+        <button class="primario largura" type="submit" id="btnAuth">Entrar</button>
+      </form>
+    </section>
+
+    <section id="painelApp" hidden>
+      <section id="painelConta" class="cartao" hidden>
+    <h2>Minha conta</h2>
+    <p>Atualize seus dados pessoais.</p>
+
+    <form id="formConta">
+        <label for="contaNome">Nome</label>
+        <input id="contaNome" type="text" required maxlength="120">
+
+        <label for="contaEmail">E-mail</label>
+        <input id="contaEmail" type="email" required maxlength="255">
+
+        <label for="contaSenha">Nova senha</label>
+        <input id="contaSenha" type="password"
+               minlength="6" autocomplete="new-password"
+               placeholder="Deixe em branco para manter a atual">
+
+        <div class="acoes-form">
+            <button class="primario" type="submit" id="btnSalvarConta">
+                Salvar alterações
+            </button>
+
+            <button class="secundario" type="button" id="btnCancelarConta">
+                Cancelar
+            </button>
+        </div>
+    </form>
+</section>
+      <div class="cabecalho-lista">
+        <div><h1>Pontos de coleta</h1><p>Consulte os locais e os materiais recebidos.</p></div>
+        <button id="btnSair" class="secundario" type="button">Sair</button>
+      </div>
+      <p id="mensagem" role="status"></p>
+      <section id="painelFormulario" class="cartao" hidden>
+        <h2 id="tituloFormulario">Cadastrar ponto</h2>
+        <form id="formPonto">
+          <input id="pontoId" type="hidden">
+          <div class="campos">
+            <div><label for="pontoNome">Nome do local</label><input id="pontoNome" required maxlength="120"></div>
+            <div><label for="pontoEndereco">Endereço</label><input id="pontoEndereco" required maxlength="200"></div>
+            <div><label for="pontoMateriais">Materiais recebidos</label><input id="pontoMateriais" required maxlength="255" placeholder="Papel, plástico, vidro..."></div>
+            <div><label for="pontoHorario">Horário</label><input id="pontoHorario" required maxlength="120" placeholder="Segunda a sexta, 8h às 17h"></div>
+          </div>
+          <label for="pontoObs">Observações</label><textarea id="pontoObs" rows="2"></textarea>
+          <div class="acoes-form"><button class="primario" type="submit" id="btnSalvar">Cadastrar ponto</button><button class="secundario" type="button" id="btnCancelar" hidden>Cancelar edição</button></div>
+        </form>
+      </section>
+      <div id="listaPontos" class="grade"></div>
+    </section>
+  </main>
+  <footer>EcoTrack · Pequenas atitudes, impacto coletivo.</footer>
+  <script src="script.js"></script>
+</body>
+</html>
