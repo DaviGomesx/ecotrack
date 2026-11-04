@@ -45,3 +45,72 @@ footer{text-align:center;padding:25px;color:#718477;font-size:.9rem}
     outline: 2px solid currentColor;
     outline-offset: 4px;
 }
+
+/* PESQUISA E FILTROS */
+
+.filtros {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filtros h2 {
+    color: #145c3b;
+    margin-bottom: 5px;
+}
+
+.filtros input,
+.filtros select {
+    width: 100%;
+    border: 1px solid #cbdacf;
+    border-radius: 8px;
+    padding: 12px;
+    font: inherit;
+    background: white;
+    color: #173b2b;
+}
+
+.filtros input:focus,
+.filtros select:focus {
+    outline: 2px solid #81c99e;
+    border-color: #39855a;
+}
+
+#btnLimparFiltros {
+    align-self: flex-start;
+    margin-top: 8px;
+}
+
+/* DESCRIÇÃO DOS MATERIAIS */
+
+#pontoMateriais {
+    width: 100%;
+    border: 1px solid #cbdacf;
+    border-radius: 8px;
+    padding: 12px;
+    font: inherit;
+    resize: vertical;
+    min-height: 85px;
+}
+
+#pontoMateriais:focus {
+    outline: 2px solid #81c99e;
+    border-color: #39855a;
+}
+
+/* MELHORIA NOS CARTÕES */
+
+.ponto {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ponto:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 20px #123b2018;
+}
+
+@media(max-width: 600px) {
+    #btnLimparFiltros {
+        width: 100%;
+    }
+}

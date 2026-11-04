@@ -42,3 +42,6 @@ HTML, CSS, JavaScript (Fetch e DOM), Node.js, Express, MySQL, API REST, JWT e bc
 
 ## Teste
 Registre um usuário pela interface, faça login e consulte os pontos. Para testar o CRUD completo, altere seu perfil para `admin` com o comando SQL acima e entre novamente.
+
+## ATUALIZAÇÕES FUTURAS
+Aplicação de novas funções de filtragem nos pontos!

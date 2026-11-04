@@ -63,6 +63,41 @@
         <button id="btnSair" class="secundario" type="button">Sair</button>
       </div>
       <p id="mensagem" role="status"></p>
+      
+<!-- Pesquisa e filtros de pontos de coleta -->
+<section class="cartao filtros">
+    <h2>Encontre um ponto de coleta</h2>
+
+    <label for="campoBusca">Pesquisar por nome ou endereço</label>
+    <input
+        type="search"
+        id="campoBusca"
+        placeholder="Ex.: Ecoponto Central ou Rua das Flores"
+    >
+
+    <label for="filtroMaterial">Filtrar por material recebido</label>
+    <select id="filtroMaterial">
+        <option value="">Todos os materiais</option>
+        <option value="papel">Papel</option>
+        <option value="papelão">Papelão</option>
+        <option value="plástico">Plástico</option>
+        <option value="vidro">Vidro</option>
+        <option value="metal">Metal</option>
+        <option value="eletrônicos">Eletrônicos</option>
+        <option value="pilhas">Pilhas e baterias</option>
+        <option value="óleo">Óleo de cozinha</option>
+        <option value="orgânicos">Resíduos orgânicos</option>
+    </select>
+
+    <button
+        type="button"
+        id="btnLimparFiltros"
+        class="secundario"
+    >
+        Limpar filtros
+    </button>
+</section>
+
       <section id="painelFormulario" class="cartao" hidden>
         <h2 id="tituloFormulario">Cadastrar ponto</h2>
         <form id="formPonto">
@@ -70,7 +105,19 @@
           <div class="campos">
             <div><label for="pontoNome">Nome do local</label><input id="pontoNome" required maxlength="120"></div>
             <div><label for="pontoEndereco">Endereço</label><input id="pontoEndereco" required maxlength="200"></div>
-            <div><label for="pontoMateriais">Materiais recebidos</label><input id="pontoMateriais" required maxlength="255" placeholder="Papel, plástico, vidro..."></div>
+            
+<div>
+    <label for="pontoMateriais">Materiais recebidos</label>
+
+    <textarea
+        id="pontoMateriais"
+        required
+        maxlength="1000"
+        rows="3"
+        placeholder="Ex.: Papel, papelão, plástico PET, vidro e latas de alumínio."
+    ></textarea>
+</div>
+
             <div><label for="pontoHorario">Horário</label><input id="pontoHorario" required maxlength="120" placeholder="Segunda a sexta, 8h às 17h"></div>
           </div>
           <label for="pontoObs">Observações</label><textarea id="pontoObs" rows="2"></textarea>
