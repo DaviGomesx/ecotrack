@@ -156,6 +156,7 @@ async function entrarOuRegistrar(evento) {
 function mostrarAplicacao() {
     painelAuth.hidden = true;
     painelApp.hidden = false;
+    document.getElementById("usuarioLogado").hidden = false;
 
     document.getElementById("usuarioLogado").textContent =
         `${usuario.nome} · ${
@@ -178,7 +179,9 @@ function sair() {
     painelAuth.hidden = false;
     painelApp.hidden = true;
 
-    document.getElementById("usuarioLogado").textContent = "";
+    const botaoUsuario = document.getElementById("usuarioLogado");
+    botaoUsuario.textContent = "";
+    botaoUsuario.hidden = true;
 
     formAuth.reset();
 
