@@ -3,131 +3,122 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EcoTrack | Pontos de coleta</title>
+  <meta name="theme-color" content="#123d2c">
+  <title>EcoTrack | Gestão sustentável</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="topo">
-    <div><span class="marca">♻ EcoTrack</span><p>Descarte consciente começa com informação.</p></div>
-    <button id="usuarioLogado" class="usuario-logado" type="button" title="Editar minha conta" hidden></button>
-  </header>
-  <main>
-    <section id="painelAuth" class="cartao auth">
-      <h1>Bem-vindo ao EcoTrack</h1>
-      <p>Entre ou crie uma conta para encontrar pontos de coleta.</p>
-      <div class="abas">
-        <button id="abaLogin" class="aba ativa" type="button">Entrar</button>
-        <button id="abaRegistro" class="aba" type="button">Criar conta</button>
+  <section id="painelAuth" class="auth-layout">
+    <div class="auth-aside">
+      <div class="brand brand-light"><span class="brand-icon">♻</span><span>EcoTrack</span></div>
+      <div class="auth-message">
+        <span class="eyebrow">UM FUTURO MAIS LIMPO COMEÇA AQUI</span>
+        <h1>Pequenas atitudes.<br><em>Grandes mudanças.</em></h1>
+        <p>Encontre destinos corretos para seus resíduos e faça parte de uma comunidade mais sustentável.</p>
       </div>
-      <form id="formAuth">
-        <label id="labelNome" for="nome">Nome</label>
-        <input id="nome" autocomplete="name" placeholder="Seu nome">
-        <label for="email">E-mail</label>
-        <input id="email" type="email" required autocomplete="email" placeholder="voce@email.com">
-        <label for="senha">Senha</label>
-        <input id="senha" type="password" required minlength="6" autocomplete="current-password" placeholder="Mínimo de 6 caracteres">
-        <button class="primario largura" type="submit" id="btnAuth">Entrar</button>
-      </form>
-    </section>
-
-    <section id="painelApp" hidden>
-      <section id="painelConta" class="cartao" hidden>
-    <h2>Minha conta</h2>
-    <p>Atualize seus dados pessoais.</p>
-
-    <form id="formConta">
-        <label for="contaNome">Nome</label>
-        <input id="contaNome" type="text" required maxlength="120">
-
-        <label for="contaEmail">E-mail</label>
-        <input id="contaEmail" type="email" required maxlength="255">
-
-        <label for="contaSenha">Nova senha</label>
-        <input id="contaSenha" type="password"
-               minlength="6" autocomplete="new-password"
-               placeholder="Deixe em branco para manter a atual">
-
-        <div class="acoes-form">
-            <button class="primario" type="submit" id="btnSalvarConta">
-                Salvar alterações
-            </button>
-
-            <button class="secundario" type="button" id="btnCancelarConta">
-                Cancelar
-            </button>
-        </div>
-    </form> 
-</section>
-      <div class="cabecalho-lista">
-        <div><h1>Pontos de coleta</h1><p>Consulte os locais e os materiais recebidos.</p></div>
-        <button id="btnSair" class="secundario" type="button">Sair</button>
-      </div>
-      <p id="mensagem" role="status"></p>
-      
-<!-- Pesquisa e filtros de pontos de coleta -->
-<section class="cartao filtros">
-    <h2>Encontre um ponto de coleta</h2>
-
-    <label for="campoBusca">Pesquisar por nome ou endereço</label>
-    <input
-        type="search"
-        id="campoBusca"
-        placeholder="Ex.: Ecoponto Central ou Rua das Flores"
-    >
-
-    <label for="filtroMaterial">Filtrar por material recebido</label>
-    <select id="filtroMaterial">
-        <option value="">Todos os materiais</option>
-        <option value="papel">Papel</option>
-        <option value="papelão">Papelão</option>
-        <option value="plástico">Plástico</option>
-        <option value="vidro">Vidro</option>
-        <option value="metal">Metal</option>
-        <option value="eletrônicos">Eletrônicos</option>
-        <option value="pilhas">Pilhas e baterias</option>
-        <option value="óleo">Óleo de cozinha</option>
-        <option value="orgânicos">Resíduos orgânicos</option>
-    </select>
-
-    <button
-        type="button"
-        id="btnLimparFiltros"
-        class="secundario"
-    >
-        Limpar filtros
-    </button>
-</section>
-
-      <section id="painelFormulario" class="cartao" hidden>
-        <h2 id="tituloFormulario">Cadastrar ponto</h2>
-        <form id="formPonto">
-          <input id="pontoId" type="hidden">
-          <div class="campos">
-            <div><label for="pontoNome">Nome do local</label><input id="pontoNome" required maxlength="120"></div>
-            <div><label for="pontoEndereco">Endereço</label><input id="pontoEndereco" required maxlength="200"></div>
-            
-<div>
-    <label for="pontoMateriais">Materiais recebidos</label>
-
-    <textarea
-        id="pontoMateriais"
-        required
-        maxlength="1000"
-        rows="3"
-        placeholder="Ex.: Papel, papelão, plástico PET, vidro e latas de alumínio."
-    ></textarea>
-</div>
-
-            <div><label for="pontoHorario">Horário</label><input id="pontoHorario" required maxlength="120" placeholder="Segunda a sexta, 8h às 17h"></div>
-          </div>
-          <label for="pontoObs">Observações</label><textarea id="pontoObs" rows="2"></textarea>
-          <div class="acoes-form"><button class="primario" type="submit" id="btnSalvar">Cadastrar ponto</button><button class="secundario" type="button" id="btnCancelar" hidden>Cancelar edição</button></div>
+      <div class="auth-foot">Descarte consciente começa com informação.</div>
+    </div>
+    <div class="auth-main">
+      <div class="auth-card">
+        <div class="brand brand-dark"><span class="brand-icon">♻</span><span>EcoTrack</span></div>
+        <span class="eyebrow">BEM-VINDO AO ECOTRACK</span>
+        <h2>Acesse sua conta</h2>
+        <p class="muted">Entre ou crie sua conta para continuar.</p>
+        <div class="abas"><button id="abaLogin" class="aba ativa" type="button">Entrar</button><button id="abaRegistro" class="aba" type="button">Criar conta</button></div>
+        <form id="formAuth">
+          <label id="labelNome" for="nome">Nome</label>
+          <input id="nome" autocomplete="name" placeholder="Como podemos te chamar?">
+          <label for="email">E-mail</label>
+          <input id="email" type="email" required autocomplete="email" placeholder="voce@email.com">
+          <label for="senha">Senha</label>
+          <input id="senha" type="password" required minlength="6" autocomplete="current-password" placeholder="Mínimo de 6 caracteres">
+          <button class="primario largura" type="submit" id="btnAuth">Entrar <span>→</span></button>
         </form>
+        <p class="auth-note">Ao continuar, você ajuda a construir um mundo mais sustentável.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="painelApp" class="app-layout" hidden>
+    <aside class="sidebar">
+      <a class="brand brand-light sidebar-brand" href="#inicio"><span class="brand-icon">♻</span><span>EcoTrack</span></a>
+      <div class="sidebar-label">MENU PRINCIPAL</div>
+      <nav class="side-nav" aria-label="Navegação principal">
+        <button class="nav-item ativa" type="button" data-pagina="inicio"><span class="nav-icon">⌂</span>Visão geral</button>
+        <button class="nav-item" type="button" data-pagina="pontos"><span class="nav-icon">⌖</span>Pontos de coleta</button>
+        <button class="nav-item" type="button" data-pagina="feedback" id="navFeedback"><span class="nav-icon">✉</span>Sugerir um ponto</button>
+        <button class="nav-item admin-nav" type="button" data-pagina="solicitacoes" id="navSolicitacoes" hidden><span class="nav-icon">▤</span>Solicitações recebidas</button>
+      </nav>
+      <div class="sidebar-label account-label">SUA CONTA</div>
+      <nav class="side-nav">
+        <button class="nav-item" id="navPerfil" type="button" data-pagina="perfil"><span class="nav-icon">♙</span>Meu perfil</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-tip"><span>✳</span><strong>Faça a diferença</strong><p>O descarte correto transforma o futuro do planeta.</p></div>
+        <button id="btnSair" class="logout-button" type="button"><span>↪</span> Sair da conta</button>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div><span class="topbar-kicker">PLATAFORMA DE SUSTENTABILIDADE</span><div class="topbar-title">Olá, <strong id="nomeTopo">usuário</strong> 👋</div></div>
+        <button id="usuarioLogado" class="user-chip" type="button" title="Abrir perfil"><span class="avatar" id="avatarTopo">U</span><span><strong id="nomeChip">Usuário</strong><small id="perfilChip">Usuário</small></span><span class="chip-chevron">⌄</span></button>
+      </header>
+
+      <section id="paginaInicio" class="page-content">
+        <div class="welcome-banner"><div><span class="eyebrow">CUIDAR DO PLANETA É UM TRABALHO COLETIVO</span><h1>Seu próximo passo<br>é <em>mais sustentável.</em></h1><p>Consulte os pontos de coleta e descubra onde descartar seus materiais corretamente.</p><button class="banner-button" type="button" data-ir="pontos">Explorar pontos de coleta <span>→</span></button></div><div class="banner-art" aria-hidden="true"><div class="art-circle circle-one"></div><div class="art-circle circle-two"></div><div class="art-leaf">♻</div><span class="art-spark spark-one">✳</span><span class="art-spark spark-two">✦</span></div></div>
+        <div class="section-heading"><div><span class="eyebrow">EXPLORE O ECOTRACK</span><h2>O que você procura?</h2></div></div>
+        <div class="shortcut-grid">
+          <button class="shortcut-card" type="button" data-ir="pontos"><span class="shortcut-icon green-icon">⌖</span><span><strong>Pontos de coleta</strong><small>Encontre locais e materiais aceitos.</small></span><b>→</b></button>
+          <button class="shortcut-card" type="button" data-ir="perfil"><span class="shortcut-icon cream-icon">♙</span><span><strong>Meu perfil</strong><small>Gerencie seus dados pessoais.</small></span><b>→</b></button>
+        </div>
+        <div class="section-heading points-heading"><div><span class="eyebrow">PARA COMEÇAR</span><h2>Encontre um local perto de você</h2><p class="muted">Use a pesquisa para localizar um ponto de coleta.</p></div><button class="text-link" type="button" data-ir="pontos">Ver todos os pontos →</button></div>
+        <div id="resumoPontos" class="summary-grid"><div class="summary-card"><span class="summary-symbol">♻</span><span class="summary-number" id="totalPontos">—</span><span class="summary-label">Pontos cadastrados</span></div><div class="summary-card summary-green"><span class="summary-symbol">⌕</span><span class="summary-number">9+</span><span class="summary-label">Tipos de materiais</span></div><div class="summary-card summary-cream"><span class="summary-symbol">✳</span><span class="summary-number">100%</span><span class="summary-label">Atitude consciente</span></div></div>
       </section>
-      <div id="listaPontos" class="grade"></div>
-    </section>
-  </main>
-  <footer>EcoTrack · Pequenas atitudes, impacto coletivo.</footer>
+
+      <section id="paginaPontos" class="page-content" hidden>
+        <div class="page-heading"><div><span class="eyebrow">DESCARTE CONSCIENTE</span><h1>Pontos de coleta</h1><p>Encontre locais, confira os materiais recebidos e planeje seu descarte.</p></div><span class="heading-mark">⌖</span></div>
+        <p id="mensagem" class="status-message" role="status"></p>
+        <section class="filter-panel">
+          <div class="filter-title"><span class="filter-icon">⌕</span><div><h2>Encontre um ponto</h2><p>Pesquise por nome, endereço ou material.</p></div></div>
+          <div class="filter-fields"><div class="search-wrap"><label for="campoBusca">Pesquisar local</label><input type="search" id="campoBusca" placeholder="Ex.: Ecoponto Central ou Rua das Flores"></div><div><label for="filtroMaterial">Material recebido</label><select id="filtroMaterial"><option value="">Todos os materiais</option><option value="papel">Papel</option><option value="papelão">Papelão</option><option value="plástico">Plástico</option><option value="vidro">Vidro</option><option value="metal">Metal</option><option value="eletrônicos">Eletrônicos</option><option value="pilhas">Pilhas e baterias</option><option value="óleo">Óleo de cozinha</option><option value="orgânicos">Resíduos orgânicos</option></select></div><button type="button" id="btnLimparFiltros" class="clear-button">Limpar filtros</button></div>
+        </section>
+        <section id="painelFormulario" class="form-panel" hidden><div class="form-panel-heading"><div><span class="eyebrow">ÁREA ADMINISTRATIVA</span><h2 id="tituloFormulario">Cadastrar ponto</h2></div><span class="admin-mark">＋</span></div><form id="formPonto"><input id="pontoId" type="hidden"><div class="campos"><div><label for="pontoNome">Nome do local</label><input id="pontoNome" required maxlength="120" placeholder="Nome do ponto"></div><div><label for="pontoEndereco">Endereço</label><input id="pontoEndereco" required maxlength="200" placeholder="Rua, número e bairro"></div><div><label for="pontoMateriais">Materiais recebidos</label><textarea id="pontoMateriais" required maxlength="1000" rows="3" placeholder="Ex.: Papel, plástico PET, vidro e alumínio."></textarea></div><div><label for="pontoHorario">Horário de funcionamento</label><input id="pontoHorario" required maxlength="120" placeholder="Segunda a sexta, 8h às 17h"></div></div><label for="pontoObs">Observações</label><textarea id="pontoObs" rows="2" placeholder="Informações adicionais (opcional)"></textarea><div class="acoes-form"><button class="primario" type="submit" id="btnSalvar">Cadastrar ponto</button><button class="clear-button" type="button" id="btnCancelar" hidden>Cancelar edição</button></div></form></section>
+        <div class="results-heading"><h2>Locais disponíveis</h2><span class="results-caption">Informações para um descarte correto</span></div>
+        <div id="listaPontos" class="grade"></div>
+      </section>
+
+      <section id="paginaPerfil" class="page-content" hidden>
+        <div class="page-heading"><div><span class="eyebrow">CONFIGURAÇÕES PESSOAIS</span><h1>Meu perfil</h1><p>Consulte e atualize as informações da sua conta.</p></div><span class="heading-mark">♙</span></div>
+        <section id="painelConta" class="profile-panel"><div class="profile-cover"><div class="profile-avatar" id="avatarPerfil">U</div><div><span class="eyebrow">PERFIL ECOTRACK</span><h2 id="perfilNomeExibido">Seu nome</h2><p id="perfilTipoExibido">Usuário</p></div></div><div class="profile-form-wrap"><div class="profile-form-heading"><h2>Dados da conta</h2><p>Seus dados são utilizados para identificar seu acesso à plataforma.</p></div><form id="formConta"><div class="campos"><div><label for="contaNome">Nome completo</label><input id="contaNome" type="text" required maxlength="120"></div><div><label for="contaEmail">E-mail</label><input id="contaEmail" type="email" required maxlength="255"></div><div class="full-field"><label for="contaSenha">Nova senha</label><input id="contaSenha" type="password" minlength="6" autocomplete="new-password" placeholder="Deixe em branco para manter a senha atual"></div></div><div class="acoes-form"><button class="primario" type="submit" id="btnSalvarConta">Salvar alterações</button></div></form></div></section>
+      </section>
+
+      <section id="paginaFeedback" class="page-content" hidden>
+        <div class="page-heading"><div><span class="eyebrow">SUA PARTICIPAÇÃO IMPORTA</span><h1>Sugerir novo ponto</h1><p>Conhece um local que poderia receber materiais recicláveis? Envie a sugestão para nossa equipe.</p></div><span class="heading-mark">✉</span></div>
+        <section class="form-panel feedback-panel"><div class="form-panel-heading"><div><span class="eyebrow">FORMULÁRIO DE SUGESTÃO</span><h2>Informações do local</h2><p class="muted">Quanto mais detalhes, melhor será a avaliação.</p></div><span class="admin-mark">＋</span></div>
+          <form id="formFeedback"><div class="campos">
+            <div><label for="sugNome">Nome do ponto ou estabelecimento *</label><input id="sugNome" required maxlength="120" placeholder="Ex.: Mercado do Bairro"></div>
+            <div><label for="sugTelefone">Telefone do local (se souber)</label><input id="sugTelefone" maxlength="40" placeholder="(00) 00000-0000"></div>
+            <div class="full-field"><label for="sugEndereco">Endereço completo *</label><input id="sugEndereco" required maxlength="200" placeholder="Rua, número, bairro e complemento"></div>
+            <div><label for="sugCidade">Cidade / Estado *</label><input id="sugCidade" required maxlength="120" placeholder="Cidade - UF"></div>
+            <div><label for="sugHorario">Horário de funcionamento *</label><input id="sugHorario" required maxlength="120" placeholder="Dias e horários"></div>
+            <div class="full-field"><label for="sugMateriais">Materiais que o local poderia receber *</label><textarea id="sugMateriais" required maxlength="1000" rows="3" placeholder="Papel, plástico, vidro, eletrônicos, óleo... "></textarea></div>
+            <div class="full-field"><label for="sugDetalhes">Outras informações</label><textarea id="sugDetalhes" maxlength="1500" rows="4" placeholder="Conte como soube do local, referências para encontrá-lo ou outras informações úteis."></textarea></div>
+          </div><p class="feedback-privacy">Ao enviar, seu nome e e-mail cadastrado serão anexados à sugestão para que a equipe administrativa possa entrar em contato, se necessário.</p><div class="acoes-form"><button class="primario" type="submit" id="btnEnviarFeedback">Enviar sugestão</button></div><p id="mensagemFeedback" class="status-message" role="status"></p></form>
+        </section>
+      </section>
+
+      <section id="paginaSolicitacoes" class="page-content" hidden>
+        <div class="page-heading"><div><span class="eyebrow">PAINEL ADMINISTRATIVO</span><h1>Sugestões dos usuários</h1><p>Analise os locais sugeridos e consulte os dados de contato de quem enviou.</p></div><span class="heading-mark">▤</span></div>
+        <p id="mensagemSolicitacoes" class="status-message" role="status"></p>
+        <div id="listaSolicitacoes" class="grade solicitacoes-grade"></div>
+      </section>
+      <footer class="app-footer">EcoTrack <span>·</span> Pequenas atitudes, impacto coletivo.</footer>
+    </main>
+  </section>
   <script src="script.js"></script>
 </body>
 </html>

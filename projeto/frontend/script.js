@@ -12,7 +12,6 @@ const btnAuth = document.getElementById("btnAuth");
 const mensagem = document.getElementById("mensagem");
 const listaPontos = document.getElementById("listaPontos");
 const painelFormulario = document.getElementById("painelFormulario");
-const painelConta = document.getElementById("painelConta");
 const formConta = document.getElementById("formConta");
 const contaNome = document.getElementById("contaNome");
 const contaEmail = document.getElementById("contaEmail");
@@ -51,9 +50,18 @@ document.getElementById("btnCancelar").addEventListener("click", limparFormulari
 
 document.getElementById("usuarioLogado").addEventListener("click", abrirMinhaConta);
 
-document.getElementById("btnCancelarConta").addEventListener("click", fecharMinhaConta);
+// NAVEGAÇÃO ENTRE AS TELAS
+document.querySelectorAll("[data-pagina]").forEach(botao => {
+    botao.addEventListener("click", () => mostrarPagina(botao.dataset.pagina));
+});
+
+document.querySelectorAll("[data-ir]").forEach(botao => {
+    botao.addEventListener("click", () => mostrarPagina(botao.dataset.ir));
+});
+
 
 formConta.addEventListener("submit", salvarMinhaConta);
+document.getElementById("formFeedback").addEventListener("submit", enviarFeedback);
 
 // EVENTOS DOS FILTROS
 campoBusca.addEventListener("input", carregarPontos);
@@ -133,6 +141,9 @@ async function entrarOuRegistrar(evento) {
         } else {
             token = resultado.token;
             usuario = resultado.usuario;
+            if (!usuario || !usuario.nome) {
+                throw new Error("Login realizado, mas os dados do usuário não vieram corretamente da API. Confira a resposta de /auth/login.");
+            }
 
             localStorage.setItem("ecotrack_token", token);
 
@@ -158,14 +169,52 @@ function mostrarAplicacao() {
     painelApp.hidden = false;
     document.getElementById("usuarioLogado").hidden = false;
 
-    document.getElementById("usuarioLogado").textContent =
-        `${usuario.nome} · ${
-            usuario.perfil === "admin" ? "Administrador" : "Usuário"
-        }`;
+    const nome = usuario.nome || "Usuário";
+    const perfil = usuario.perfil === "admin" ? "Administrador" : "Usuário";
+    definirTexto("nomeTopo", nome.split(" ")[0]);
+    definirTexto("nomeChip", nome);
+    definirTexto("perfilChip", perfil);
+    definirTexto("avatarTopo", nome.charAt(0).toUpperCase());
+    definirTexto("avatarPerfil", nome.charAt(0).toUpperCase());
+    definirTexto("perfilNomeExibido", nome);
+    definirTexto("perfilTipoExibido", perfil);
 
-    painelFormulario.hidden = usuario.perfil !== "admin";
-
+    const ehAdmin = usuario.perfil === "admin";
+    painelFormulario.hidden = !ehAdmin;
+    document.getElementById("navSolicitacoes").hidden = !ehAdmin;
+    document.getElementById("navFeedback").hidden = ehAdmin;
+    mostrarPagina("inicio");
     carregarPontos();
+}
+
+// EXIBE UMA DAS TELAS DA PLATAFORMA
+function mostrarPagina(pagina) {
+    const paginas = {
+        inicio: document.getElementById("paginaInicio"),
+        pontos: document.getElementById("paginaPontos"),
+        perfil: document.getElementById("paginaPerfil"),
+        feedback: document.getElementById("paginaFeedback"),
+        solicitacoes: document.getElementById("paginaSolicitacoes")
+    };
+
+    if (!paginas[pagina] || (pagina === "solicitacoes" && usuario?.perfil !== "admin") || (pagina === "feedback" && usuario?.perfil === "admin")) {
+        pagina = "inicio";
+    }
+
+    Object.entries(paginas).forEach(([nome, elemento]) => {
+        elemento.hidden = nome !== pagina;
+    });
+
+   document.querySelectorAll("[data-pagina]").forEach(botao => {
+        botao.classList.toggle("ativa", botao.dataset.pagina === pagina);
+    });
+
+    if (pagina === "perfil") {
+        carregarDadosPerfil();
+    }
+
+    if (pagina === "pontos") carregarPontos();
+    if (pagina === "solicitacoes") carregarSolicitacoes();
 }
 
 // SAIR
@@ -191,10 +240,26 @@ function sair() {
     mostrarMensagem("");
 }
 
+// ATUALIZA TEXTO DE FORMA SEGURA (evita falha caso o HTML esteja desatualizado)
+function definirTexto(id, texto) {
+    const elemento = document.getElementById(id);
+    if (!elemento) {
+        console.warn(`EcoTrack: elemento #${id} não encontrado no index.html.`);
+        return false;
+    }
+    elemento.textContent = texto ?? "";
+    return true;
+}
+
 // MENSAGENS
 function mostrarMensagem(texto, erro = false) {
-    mensagem.textContent = texto;
-    mensagem.classList.toggle("erro", erro);
+    const elemento = document.getElementById("mensagem");
+    if (!elemento) {
+        console.warn("EcoTrack: elemento #mensagem não encontrado no index.html.");
+        return;
+    }
+    elemento.textContent = texto ?? "";
+    elemento.classList.toggle("erro", erro);
 }
 
 // REQUISIÇÕES À API
@@ -255,6 +320,7 @@ async function carregarPontos() {
         const pontos = await requisicao(rota);
 
         listaPontos.replaceChildren();
+        definirTexto("totalPontos", pontos.length);
 
         if (!pontos.length) {
             mostrarMensagem(
@@ -370,11 +436,9 @@ function preencherFormulario(ponto) {
     document.getElementById("pontoObs").value =
         ponto.observacoes || "";
 
-    document.getElementById("tituloFormulario").textContent =
-        "Editar ponto de coleta";
+    definirTexto("tituloFormulario", "Editar ponto de coleta");
 
-    document.getElementById("btnSalvar").textContent =
-        "Salvar alterações";
+    definirTexto("btnSalvar", "Salvar alterações");
 
     document.getElementById("btnCancelar").hidden = false;
 
@@ -390,11 +454,9 @@ function limparFormulario() {
 
     document.getElementById("pontoId").value = "";
 
-    document.getElementById("tituloFormulario").textContent =
-        "Cadastrar ponto";
+    definirTexto("tituloFormulario", "Cadastrar ponto");
 
-    document.getElementById("btnSalvar").textContent =
-        "Cadastrar ponto";
+    definirTexto("btnSalvar", "Cadastrar ponto");
 
     document.getElementById("btnCancelar").hidden = true;
 }
@@ -460,31 +522,27 @@ async function excluirPonto(id) {
     }
 }
 
-// ABRIR MINHA CONTA
+// ABRIR PERFIL DO USUÁRIO
 async function abrirMinhaConta() {
+    mostrarPagina("perfil");
+}
+
+// CARREGAR DADOS DO PERFIL
+async function carregarDadosPerfil() {
     try {
         const dados = await requisicao("/auth/minha-conta");
-
         contaNome.value = dados.nome;
         contaEmail.value = dados.email;
         contaSenha.value = "";
-
-        painelConta.hidden = false;
-
-        painelConta.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-        });
-
+        definirTexto("perfilNomeExibido", dados.nome);
     } catch (erro) {
-        alert(erro.message);
+        mostrarMensagem(erro.message, true);
     }
 }
 
-// FECHAR MINHA CONTA
+// LIMPAR CAMPO DE SENHA AO SAIR DO PERFIL
 function fecharMinhaConta() {
-    painelConta.hidden = true;
-    formConta.reset();
+    contaSenha.value = "";
 }
 
 // SALVAR ALTERAÇÕES DA CONTA
@@ -515,10 +573,11 @@ async function salvarMinhaConta(evento) {
             JSON.stringify(usuario)
         );
 
-        document.getElementById("usuarioLogado").textContent =
-            `${usuario.nome} · ${
-                usuario.perfil === "admin" ? "Administrador" : "Usuário"
-            }`;
+        definirTexto("nomeTopo", usuario.nome.split(" ")[0]);
+        definirTexto("nomeChip", usuario.nome);
+        definirTexto("avatarTopo", usuario.nome.charAt(0).toUpperCase());
+        definirTexto("avatarPerfil", usuario.nome.charAt(0).toUpperCase());
+        definirTexto("perfilNomeExibido", usuario.nome);
 
         fecharMinhaConta();
 
@@ -530,6 +589,76 @@ async function salvarMinhaConta(evento) {
     } finally {
         btnSalvarConta.disabled = false;
     }
+}
+
+// ENVIO DE SUGESTÃO DE NOVO PONTO (CLIENTE)
+async function enviarFeedback(evento) {
+    evento.preventDefault();
+    const botao = document.getElementById("btnEnviarFeedback");
+    const status = document.getElementById("mensagemFeedback");
+    const dados = {
+        nome_ponto: document.getElementById("sugNome").value.trim(),
+        endereco: document.getElementById("sugEndereco").value.trim(),
+        cidade: document.getElementById("sugCidade").value.trim(),
+        materiais: document.getElementById("sugMateriais").value.trim(),
+        horario: document.getElementById("sugHorario").value.trim(),
+        telefone: document.getElementById("sugTelefone").value.trim(),
+        detalhes: document.getElementById("sugDetalhes").value.trim()
+    };
+    botao.disabled = true;
+    try {
+        const resultado = await requisicao("/solicitacoes", { method: "POST", body: JSON.stringify(dados) });
+        document.getElementById("formFeedback").reset();
+        status.textContent = resultado.mensagem;
+        status.classList.remove("erro");
+    } catch (erro) {
+        status.textContent = erro.message;
+        status.classList.add("erro");
+    } finally { botao.disabled = false; }
+}
+
+// PAINEL ADMINISTRATIVO: CONSULTAR SUGESTÕES E CONTATO DO SOLICITANTE
+async function carregarSolicitacoes() {
+    const lista = document.getElementById("listaSolicitacoes");
+    const status = document.getElementById("mensagemSolicitacoes");
+    lista.replaceChildren();
+    status.textContent = "Carregando sugestões...";
+    try {
+        const solicitacoes = await requisicao("/solicitacoes");
+        status.textContent = `${solicitacoes.length} sugestão(ões) recebida(s).`;
+        if (!solicitacoes.length) {
+            const vazio = document.createElement("p"); vazio.className = "empty-state"; vazio.textContent = "Ainda não há sugestões de novos pontos."; lista.append(vazio); return;
+        }
+        solicitacoes.forEach(item => {
+            const card = document.createElement("article"); card.className = "ponto solicitacao-card";
+            const titulo = document.createElement("h2"); titulo.textContent = item.nome_ponto;
+            const badge = document.createElement("span"); badge.className = "etiqueta"; badge.textContent = `Status: ${item.status}`;
+            card.append(titulo, badge);
+            adicionarTexto(card, "📍 Endereço: ", `${item.endereco}, ${item.cidade}`);
+            adicionarTexto(card, "♻ Materiais: ", item.materiais);
+            adicionarTexto(card, "🕒 Horário: ", item.horario);
+            if (item.telefone) adicionarTexto(card, "☎ Telefone do local: ", item.telefone);
+            if (item.detalhes) adicionarTexto(card, "ℹ Detalhes: ", item.detalhes);
+            const contato = document.createElement("div"); contato.className = "solicitante-info";
+            const subtitulo = document.createElement("strong"); subtitulo.textContent = "Enviado por";
+            contato.append(subtitulo);
+            adicionarTexto(contato, "Nome: ", item.nome_usuario);
+            const email = document.createElement("p"); email.append(document.createElement("strong")); email.firstChild.textContent = "E-mail: ";
+            const link = document.createElement("a"); link.href = `mailto:${item.email_usuario}`; link.textContent = item.email_usuario; email.append(link); contato.append(email);
+            card.append(contato);
+            const acoes = document.createElement("div"); acoes.className = "acoes-card";
+            const seletor = document.createElement("select");
+            ["pendente", "em análise", "aprovada", "recusada"].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v.charAt(0).toUpperCase() + v.slice(1); seletor.append(o); });
+            seletor.value = item.status;
+            const salvar = document.createElement("button"); salvar.className = "primario"; salvar.textContent = "Atualizar status";
+            salvar.addEventListener("click", async () => {
+                salvar.disabled = true;
+                try { const r = await requisicao(`/solicitacoes/${item.id}`, { method: "PATCH", body: JSON.stringify({ status: seletor.value }) }); status.textContent = r.mensagem; await carregarSolicitacoes(); }
+                catch (e) { status.textContent = e.message; status.classList.add("erro"); salvar.disabled = false; }
+            });
+            acoes.append(seletor, salvar); card.append(acoes); lista.append(card);
+        });
+    } catch (erro) { status.textContent = erro.message; status.classList.add("erro"); }
 }
 
 // INICIALIZAÇÃO

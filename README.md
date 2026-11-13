@@ -33,7 +33,43 @@ Desenvolver um sistema web que facilite a localização e a consulta de pontos d
 - Permitir que administradores gerenciem os locais cadastrados.
 - Proteger o acesso às funcionalidades por meio de autenticação e controle de permissões.
 
-## 4. Tipos de usuários e permissões
+## 4. Navegação e interface
+
+Após realizar o login, o usuário acessa uma interface com navegação lateral, organizada em três áreas:
+
+- **Visão geral:** apresenta atalhos para as principais funcionalidades e um resumo dos pontos cadastrados.
+- **Pontos de coleta:** permite pesquisar por nome ou endereço, filtrar por material e consultar os dados de cada local. Administradores também podem cadastrar, editar e excluir pontos.
+- **Meu perfil:** permite consultar e atualizar nome, e-mail e senha da própria conta.
+
+A navegação é adaptável a computadores e dispositivos móveis.
+
+## Novas funcionalidades: sugestões de pontos e painel administrativo
+
+### Área do usuário (cliente)
+- A navegação lateral inclui **Sugerir um ponto**.
+- O formulário permite informar nome do local, endereço completo, cidade/UF, materiais recebidos, horário de funcionamento, telefone do local (opcional) e detalhes adicionais (opcional).
+- Ao enviar, a sugestão é registrada no banco de dados e fica disponível para análise dos administradores.
+- O sistema associa automaticamente à sugestão o nome e o e-mail da conta autenticada. O usuário não precisa preencher novamente seus dados de contato.
+
+### Área administrativa
+- A navegação lateral exibe **Solicitações recebidas** somente para contas com perfil `admin`.
+- Cada solicitação mostra os dados do local sugerido, o nome e o e-mail do usuário que enviou (com link para contato por e-mail), além do status.
+- O administrador pode atualizar o status para **Pendente**, **Em análise**, **Aprovada** ou **Recusada**.
+- O gerenciamento de pontos permanece restrito a administradores: cadastrar, editar e excluir pontos na tela **Pontos de coleta**.
+- As permissões são verificadas também no backend; esconder um item no menu não substitui a autenticação e autorização das rotas.
+
+### Banco de dados e atualização
+
+Para bancos já existentes, execute uma vez o arquivo `projeto/sql/migracao_solicitacoes.sql` no MySQL (por exemplo, pelo Workbench). A tabela `solicitacoes_pontos` guarda os dados do local sugerido, o identificador do usuário, uma cópia do nome/e-mail no momento do envio, status e data de criação. A cópia dos dados de contato preserva a informação de quem enviou mesmo se o usuário alterar o perfil posteriormente.
+
+Para instalações novas, o arquivo `projeto/sql/ecotrack.sql` também cria essa tabela. Depois, reinicie o backend com `npm start` e atualize o frontend no navegador (`Ctrl + F5`). Não é necessário instalar dependências novas.
+
+### Rotas da API adicionadas
+- `POST /api/solicitacoes` — usuário autenticado envia uma sugestão.
+- `GET /api/solicitacoes` — somente administrador lista as sugestões.
+- `PATCH /api/solicitacoes/:id` — somente administrador atualiza o status.
+
+## 5. Tipos de usuários e permissões
 
 O EcoTrack possui dois perfis de acesso:
 
@@ -57,7 +93,7 @@ O EcoTrack possui dois perfis de acesso:
 
 As permissões administrativas são verificadas diretamente no back-end, utilizando autenticação JWT e middleware de autorização.
 
-## 5. Fluxo de funcionamento do sistema
+## 6. Fluxo de funcionamento do sistema
 
 ### Fluxo do usuário comum
 
@@ -397,3 +433,8 @@ O histórico de commits é utilizado para registrar as alterações, melhorias e
 ---
 
 **EcoTrack — Facilitando a localização de pontos de coleta e incentivando o descarte correto de materiais recicláveis.** 🌱
+### Correção e diagnóstico das solicitações
+
+Ao iniciar, o backend verifica a existência da tabela `solicitacoes_pontos` e a cria caso esteja ausente (sem apagar registros existentes). A conta configurada no MySQL precisa ter permissão `CREATE TABLE`. Também é possível executar manualmente `projeto/sql/migracao_solicitacoes.sql` no banco definido em `DB_NAME` no `.env`.
+
+Se o envio ou a listagem falhar, confira o terminal onde o backend está rodando: os erros agora exibem o código MySQL e a operação (`SOLICITACOES/CRIAR` ou `SOLICITACOES/LISTAR`). Confirme também que o usuário está autenticado e, para abrir a área de solicitações, que sua coluna `usuarios.perfil` contém exatamente `admin`. Após atualizar o projeto, encerre e inicie novamente o backend.
