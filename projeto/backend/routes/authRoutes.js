@@ -3,7 +3,8 @@ import {
     registrar,
     login,
     minhaConta,
-    atualizarMinhaConta
+    atualizarMinhaConta,
+    excluirMinhaConta
 } from "../controllers/authController.js";
 import { autenticar } from "../middlewares/autenticacao.js";
 
@@ -13,5 +14,6 @@ router.post("/registrar", registrar);
 router.post("/login", login);
 router.get("/minha-conta", autenticar, minhaConta);
 router.put("/minha-conta", autenticar, atualizarMinhaConta);
+router.delete("/minha-conta", autenticar, excluirMinhaConta);
 
 export default router;

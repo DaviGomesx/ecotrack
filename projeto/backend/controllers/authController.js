@@ -188,3 +188,24 @@ export async function atualizarMinhaConta(req, res) {
         });
     }
 }
+
+// EXCLUIR A PRÓPRIA CONTA APÓS CONFIRMAÇÃO DA SENHA
+export async function excluirMinhaConta(req, res) {
+    try {
+        const { senha } = req.body;
+        if (!senha) return res.status(400).json({ mensagem: "Informe sua senha para confirmar a exclusão." });
+
+        const [usuarios] = await pool.query(
+            "SELECT senha FROM usuarios WHERE id = ?", [req.usuario.id]
+        );
+        if (!usuarios.length) return res.status(404).json({ mensagem: "Conta não encontrada." });
+        const senhaCorreta = await bcrypt.compare(senha, usuarios[0].senha);
+        if (!senhaCorreta) return res.status(401).json({ mensagem: "Senha incorreta. A conta não foi excluída." });
+
+        await pool.query("DELETE FROM usuarios WHERE id = ?", [req.usuario.id]);
+        return res.json({ mensagem: "Conta excluída com sucesso." });
+    } catch (erro) {
+        console.error("Erro ao excluir conta:", erro);
+        return res.status(500).json({ mensagem: "Não foi possível excluir a conta." });
+    }
+}

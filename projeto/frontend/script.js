@@ -61,6 +61,7 @@ document.querySelectorAll("[data-ir]").forEach(botao => {
 
 
 formConta.addEventListener("submit", salvarMinhaConta);
+document.getElementById("btnExcluirConta").addEventListener("click", excluirMinhaConta);
 document.getElementById("formFeedback").addEventListener("submit", enviarFeedback);
 
 // EVENTOS DOS FILTROS
@@ -170,7 +171,7 @@ function mostrarAplicacao() {
     document.getElementById("usuarioLogado").hidden = false;
 
     const nome = usuario.nome || "Usuário";
-    const perfil = usuario.perfil === "admin" ? "Administrador" : "Usuário";
+    const perfil = usuario.perfil === "admin" ? "Administrador" : "Cliente";
     definirTexto("nomeTopo", nome.split(" ")[0]);
     definirTexto("nomeChip", nome);
     definirTexto("perfilChip", perfil);
@@ -183,6 +184,7 @@ function mostrarAplicacao() {
     painelFormulario.hidden = !ehAdmin;
     document.getElementById("navSolicitacoes").hidden = !ehAdmin;
     document.getElementById("navFeedback").hidden = ehAdmin;
+    document.getElementById("navMinhasSolicitacoes").hidden = ehAdmin;
     mostrarPagina("inicio");
     carregarPontos();
 }
@@ -194,10 +196,11 @@ function mostrarPagina(pagina) {
         pontos: document.getElementById("paginaPontos"),
         perfil: document.getElementById("paginaPerfil"),
         feedback: document.getElementById("paginaFeedback"),
-        solicitacoes: document.getElementById("paginaSolicitacoes")
+        solicitacoes: document.getElementById("paginaSolicitacoes"),
+        minhasSolicitacoes: document.getElementById("paginaMinhasSolicitacoes")
     };
 
-    if (!paginas[pagina] || (pagina === "solicitacoes" && usuario?.perfil !== "admin") || (pagina === "feedback" && usuario?.perfil === "admin")) {
+    if (!paginas[pagina] || (pagina === "solicitacoes" && usuario?.perfil !== "admin") || (pagina === "feedback" && usuario?.perfil === "admin") || (pagina === "minhasSolicitacoes" && usuario?.perfil === "admin")) {
         pagina = "inicio";
     }
 
@@ -215,6 +218,7 @@ function mostrarPagina(pagina) {
 
     if (pagina === "pontos") carregarPontos();
     if (pagina === "solicitacoes") carregarSolicitacoes();
+    if (pagina === "minhasSolicitacoes") carregarMinhasSolicitacoes();
 }
 
 // SAIR
@@ -535,6 +539,7 @@ async function carregarDadosPerfil() {
         contaEmail.value = dados.email;
         contaSenha.value = "";
         definirTexto("perfilNomeExibido", dados.nome);
+        definirTexto("perfilTipoExibido", dados.perfil === "admin" ? "Administrador" : "Cliente");
     } catch (erro) {
         mostrarMensagem(erro.message, true);
     }
@@ -575,6 +580,7 @@ async function salvarMinhaConta(evento) {
 
         definirTexto("nomeTopo", usuario.nome.split(" ")[0]);
         definirTexto("nomeChip", usuario.nome);
+        definirTexto("perfilChip", usuario.perfil === "admin" ? "Administrador" : "Cliente");
         definirTexto("avatarTopo", usuario.nome.charAt(0).toUpperCase());
         definirTexto("avatarPerfil", usuario.nome.charAt(0).toUpperCase());
         definirTexto("perfilNomeExibido", usuario.nome);
@@ -615,6 +621,82 @@ async function enviarFeedback(evento) {
         status.textContent = erro.message;
         status.classList.add("erro");
     } finally { botao.disabled = false; }
+}
+
+// HISTÓRICO DO CLIENTE: a API retorna apenas registros do usuário autenticado.
+async function carregarMinhasSolicitacoes() {
+    const lista = document.getElementById("listaMinhasSolicitacoes");
+    const status = document.getElementById("mensagemMinhasSolicitacoes");
+    lista.replaceChildren();
+    status.textContent = "Carregando seu histórico...";
+    status.classList.remove("erro");
+    try {
+        const solicitacoes = await requisicao("/solicitacoes/minhas");
+        status.textContent = `${solicitacoes.length} solicitação(ões) no seu histórico.`;
+        if (!solicitacoes.length) {
+            const vazio = document.createElement("p");
+            vazio.className = "empty-state";
+            vazio.textContent = "Você ainda não enviou sugestões. Quando enviar um ponto, poderá acompanhar o andamento por aqui.";
+            lista.append(vazio);
+            return;
+        }
+        solicitacoes.forEach(item => {
+            const card = document.createElement("article");
+            card.className = "ponto solicitacao-card";
+            const titulo = document.createElement("h2");
+            titulo.textContent = item.nome_ponto;
+            const badge = document.createElement("span");
+            badge.className = `etiqueta status-${item.status.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-")}`;
+            badge.textContent = `Status: ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}`;
+            card.append(titulo, badge);
+            adicionarTexto(card, "📍 Endereço: ", `${item.endereco}, ${item.cidade}`);
+            adicionarTexto(card, "♻ Materiais: ", item.materiais);
+            adicionarTexto(card, "🕒 Horário: ", item.horario);
+            if (item.telefone) adicionarTexto(card, "☎ Telefone informado: ", item.telefone);
+            if (item.detalhes) adicionarTexto(card, "ℹ Detalhes: ", item.detalhes);
+            const data = item.criado_em ? new Date(item.criado_em).toLocaleString("pt-BR") : "Data não disponível";
+            adicionarTexto(card, "📅 Enviada em: ", data);
+            const orientacao = document.createElement("p");
+            orientacao.className = "historico-nota";
+            orientacao.textContent = item.status === "pendente"
+                ? "Sua sugestão foi recebida e aguarda análise da equipe."
+                : item.status === "em análise"
+                    ? "A equipe está avaliando as informações enviadas."
+                    : item.status === "aprovada"
+                        ? "Sua sugestão foi aprovada pela equipe EcoTrack."
+                        : "Sua sugestão foi recusada. Entre em contato com a equipe caso precise de mais informações.";
+            card.append(orientacao);
+
+            const acoes = document.createElement("div");
+            acoes.className = "acoes-card historico-acoes";
+            const excluir = document.createElement("button");
+            excluir.type = "button";
+            excluir.className = "danger-button";
+            excluir.textContent = "Excluir solicitação";
+            excluir.addEventListener("click", () => excluirMinhaSolicitacao(item.id));
+            acoes.append(excluir);
+            card.append(acoes);
+            lista.append(card);
+        });
+    } catch (erro) {
+        status.textContent = erro.message;
+        status.classList.add("erro");
+    }
+}
+
+// O cliente só pode excluir uma solicitação vinculada à própria conta.
+async function excluirMinhaSolicitacao(id) {
+    if (!confirm("Deseja realmente excluir esta solicitação do seu histórico? Esta ação não pode ser desfeita.")) return;
+    const status = document.getElementById("mensagemMinhasSolicitacoes");
+    try {
+        await requisicao(`/solicitacoes/${id}`, { method: "DELETE" });
+        status.textContent = "Solicitação excluída do seu histórico.";
+        status.classList.remove("erro");
+        await carregarMinhasSolicitacoes();
+    } catch (erro) {
+        status.textContent = erro.message;
+        status.classList.add("erro");
+    }
 }
 
 // PAINEL ADMINISTRATIVO: CONSULTAR SUGESTÕES E CONTATO DO SOLICITANTE
@@ -666,4 +748,36 @@ mudarModoAuth("login");
 
 if (token && usuario) {
     mostrarAplicacao();
+}
+
+
+// EXCLUSAO DEFINITIVA DA CONTA COM CONFIRMACAO DE SENHA
+async function excluirMinhaConta() {
+    const confirmacao = confirm("Tem certeza de que deseja excluir sua conta? Essa ação não pode ser desfeita.");
+    if (!confirmacao) return;
+    const senha = prompt("Para confirmar, informe sua senha atual:");
+    if (senha === null) return;
+    if (!senha.trim()) { alert("A senha é obrigatória para excluir a conta."); return; }
+
+    const botao = document.getElementById("btnExcluirConta");
+    botao.disabled = true;
+    try {
+        const resultado = await requisicao("/auth/minha-conta", {
+            method: "DELETE",
+            body: JSON.stringify({ senha })
+        });
+        alert(resultado.mensagem || "Conta excluída.");
+        localStorage.removeItem("ecotrack_token");
+        localStorage.removeItem("ecotrack_usuario");
+        token = null;
+        usuario = null;
+        painelApp.hidden = true;
+        painelAuth.hidden = false;
+        formAuth.reset();
+        mudarModoAuth("login");
+    } catch (erro) {
+        alert(erro.message);
+    } finally {
+        botao.disabled = false;
+    }
 }

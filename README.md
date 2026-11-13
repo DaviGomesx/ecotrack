@@ -39,7 +39,7 @@ Após realizar o login, o usuário acessa uma interface com navegação lateral,
 
 - **Visão geral:** apresenta atalhos para as principais funcionalidades e um resumo dos pontos cadastrados.
 - **Pontos de coleta:** permite pesquisar por nome ou endereço, filtrar por material e consultar os dados de cada local. Administradores também podem cadastrar, editar e excluir pontos.
-- **Meu perfil:** permite consultar e atualizar nome, e-mail e senha da própria conta.
+- **Meu perfil:** permite consultar e atualizar nome, e-mail e senha da própria conta. O botão no canto superior direito identifica o usuário como **Administrador** ou **Cliente** e abre diretamente essa página.
 
 A navegação é adaptável a computadores e dispositivos móveis.
 
@@ -53,6 +53,7 @@ A navegação é adaptável a computadores e dispositivos móveis.
 
 ### Área administrativa
 - A navegação lateral exibe **Solicitações recebidas** somente para contas com perfil `admin`.
+- Clientes têm a opção **Minhas solicitações**, com a lista de sugestões que enviaram, data de envio, status atual e uma explicação do andamento. A API filtra os registros pelo ID do usuário autenticado, sem permitir consultar solicitações de outras contas.
 - Cada solicitação mostra os dados do local sugerido, o nome e o e-mail do usuário que enviou (com link para contato por e-mail), além do status.
 - O administrador pode atualizar o status para **Pendente**, **Em análise**, **Aprovada** ou **Recusada**.
 - O gerenciamento de pontos permanece restrito a administradores: cadastrar, editar e excluir pontos na tela **Pontos de coleta**.
@@ -66,6 +67,7 @@ Para instalações novas, o arquivo `projeto/sql/ecotrack.sql` também cria essa
 
 ### Rotas da API adicionadas
 - `POST /api/solicitacoes` — usuário autenticado envia uma sugestão.
+- `GET /api/solicitacoes/minhas` — usuário autenticado consulta somente as próprias solicitações e seu histórico/status.
 - `GET /api/solicitacoes` — somente administrador lista as sugestões.
 - `PATCH /api/solicitacoes/:id` — somente administrador atualiza o status.
 
@@ -438,3 +440,17 @@ O histórico de commits é utilizado para registrar as alterações, melhorias e
 Ao iniciar, o backend verifica a existência da tabela `solicitacoes_pontos` e a cria caso esteja ausente (sem apagar registros existentes). A conta configurada no MySQL precisa ter permissão `CREATE TABLE`. Também é possível executar manualmente `projeto/sql/migracao_solicitacoes.sql` no banco definido em `DB_NAME` no `.env`.
 
 Se o envio ou a listagem falhar, confira o terminal onde o backend está rodando: os erros agora exibem o código MySQL e a operação (`SOLICITACOES/CRIAR` ou `SOLICITACOES/LISTAR`). Confirme também que o usuário está autenticado e, para abrir a área de solicitações, que sua coluna `usuarios.perfil` contém exatamente `admin`. Após atualizar o projeto, encerre e inicie novamente o backend.
+
+
+## Exclusão de conta e ajustes de interface
+
+Na tela **Meu perfil**, o usuário pode solicitar a exclusão definitiva da própria conta. A ação exige confirmação explícita e a senha atual. O backend valida a senha com bcrypt antes de excluir o registro. A rota autenticada é `DELETE /api/auth/minha-conta`, com corpo JSON `{ "senha": "..." }`.
+
+A exclusão respeita as relações do banco: solicitações de pontos vinculadas ao usuário são removidas pela regra `ON DELETE CASCADE`, enquanto pontos cadastrados por ele permanecem e têm `criado_por` definido como `NULL` (`ON DELETE SET NULL`). Faça backup antes de operações administrativas no banco.
+
+O botão de acesso ao perfil no topo identifica claramente o tipo de conta (**Administrador** ou **Cliente**) e abre a página Meu perfil. Clientes também contam com a página Minhas solicitações, que apresenta seu histórico, data de envio e status atual de cada sugestão. A rota `/api/solicitacoes/minhas` restringe a consulta ao ID presente no token de autenticação.
+
+
+### Perfil no topo e exclusão de solicitações
+- O botão **Meu perfil**, no canto superior direito, identifica o nome e o tipo de conta (Administrador ou Cliente) e abre a página de perfil.
+- Clientes podem excluir uma solicitação no histórico **Minhas solicitações**. A rota `DELETE /solicitacoes/:id` exige autenticação e apaga somente o registro cujo `usuario_id` corresponde ao usuário autenticado; solicitações de outras contas não podem ser removidas.

@@ -50,6 +50,7 @@
         <button class="nav-item ativa" type="button" data-pagina="inicio"><span class="nav-icon">⌂</span>Visão geral</button>
         <button class="nav-item" type="button" data-pagina="pontos"><span class="nav-icon">⌖</span>Pontos de coleta</button>
         <button class="nav-item" type="button" data-pagina="feedback" id="navFeedback"><span class="nav-icon">✉</span>Sugerir um ponto</button>
+        <button class="nav-item" type="button" data-pagina="minhasSolicitacoes" id="navMinhasSolicitacoes"><span class="nav-icon">▤</span>Minhas solicitações</button>
         <button class="nav-item admin-nav" type="button" data-pagina="solicitacoes" id="navSolicitacoes" hidden><span class="nav-icon">▤</span>Solicitações recebidas</button>
       </nav>
       <div class="sidebar-label account-label">SUA CONTA</div>
@@ -65,7 +66,7 @@
     <main class="main-area">
       <header class="topbar">
         <div><span class="topbar-kicker">PLATAFORMA DE SUSTENTABILIDADE</span><div class="topbar-title">Olá, <strong id="nomeTopo">usuário</strong> 👋</div></div>
-        <button id="usuarioLogado" class="user-chip" type="button" title="Abrir perfil"><span class="avatar" id="avatarTopo">U</span><span><strong id="nomeChip">Usuário</strong><small id="perfilChip">Usuário</small></span><span class="chip-chevron">⌄</span></button>
+        <button id="usuarioLogado" class="user-chip" type="button" title="Abrir meu perfil" aria-label="Abrir meu perfil"><span class="avatar" id="avatarTopo">U</span><span class="user-chip-info"><strong id="nomeChip">Usuário</strong><small id="perfilChip">Cliente</small></span><span class="chip-profile-label">Meu perfil</span><span class="chip-chevron" aria-hidden="true">⌄</span></button>
       </header>
 
       <section id="paginaInicio" class="page-content">
@@ -93,7 +94,7 @@
 
       <section id="paginaPerfil" class="page-content" hidden>
         <div class="page-heading"><div><span class="eyebrow">CONFIGURAÇÕES PESSOAIS</span><h1>Meu perfil</h1><p>Consulte e atualize as informações da sua conta.</p></div><span class="heading-mark">♙</span></div>
-        <section id="painelConta" class="profile-panel"><div class="profile-cover"><div class="profile-avatar" id="avatarPerfil">U</div><div><span class="eyebrow">PERFIL ECOTRACK</span><h2 id="perfilNomeExibido">Seu nome</h2><p id="perfilTipoExibido">Usuário</p></div></div><div class="profile-form-wrap"><div class="profile-form-heading"><h2>Dados da conta</h2><p>Seus dados são utilizados para identificar seu acesso à plataforma.</p></div><form id="formConta"><div class="campos"><div><label for="contaNome">Nome completo</label><input id="contaNome" type="text" required maxlength="120"></div><div><label for="contaEmail">E-mail</label><input id="contaEmail" type="email" required maxlength="255"></div><div class="full-field"><label for="contaSenha">Nova senha</label><input id="contaSenha" type="password" minlength="6" autocomplete="new-password" placeholder="Deixe em branco para manter a senha atual"></div></div><div class="acoes-form"><button class="primario" type="submit" id="btnSalvarConta">Salvar alterações</button></div></form></div></section>
+        <section id="painelConta" class="profile-panel"><div class="profile-cover"><div class="profile-avatar" id="avatarPerfil">U</div><div><span class="eyebrow">PERFIL ECOTRACK</span><h2 id="perfilNomeExibido">Seu nome</h2><p id="perfilTipoExibido">Usuário</p></div></div><div class="profile-form-wrap"><div class="profile-form-heading"><h2>Dados da conta</h2><p>Seus dados são utilizados para identificar seu acesso à plataforma.</p></div><form id="formConta"><div class="campos"><div><label for="contaNome">Nome completo</label><input id="contaNome" type="text" required maxlength="120"></div><div><label for="contaEmail">E-mail</label><input id="contaEmail" type="email" required maxlength="255"></div><div class="full-field"><label for="contaSenha">Nova senha</label><input id="contaSenha" type="password" minlength="6" autocomplete="new-password" placeholder="Deixe em branco para manter a senha atual"></div></div><div class="acoes-form"><button class="primario" type="submit" id="btnSalvarConta">Salvar alterações</button></div></form><section class="danger-zone"><div><h3>Excluir minha conta</h3><p>Essa ação é permanente. Seus dados de acesso e sugestões enviadas serão removidos.</p></div><button class="danger-button" type="button" id="btnExcluirConta">Excluir conta</button></section></div></section>
       </section>
 
       <section id="paginaFeedback" class="page-content" hidden>
@@ -109,6 +110,12 @@
             <div class="full-field"><label for="sugDetalhes">Outras informações</label><textarea id="sugDetalhes" maxlength="1500" rows="4" placeholder="Conte como soube do local, referências para encontrá-lo ou outras informações úteis."></textarea></div>
           </div><p class="feedback-privacy">Ao enviar, seu nome e e-mail cadastrado serão anexados à sugestão para que a equipe administrativa possa entrar em contato, se necessário.</p><div class="acoes-form"><button class="primario" type="submit" id="btnEnviarFeedback">Enviar sugestão</button></div><p id="mensagemFeedback" class="status-message" role="status"></p></form>
         </section>
+      </section>
+
+      <section id="paginaMinhasSolicitacoes" class="page-content" hidden>
+        <div class="page-heading"><div><span class="eyebrow">ACOMPANHE SUAS SUGESTÕES</span><h1>Minhas solicitações</h1><p>Consulte todas as sugestões enviadas e acompanhe a atualização de cada status pela equipe.</p></div><span class="heading-mark">▤</span></div>
+        <p id="mensagemMinhasSolicitacoes" class="status-message" role="status"></p>
+        <div id="listaMinhasSolicitacoes" class="grade solicitacoes-grade"></div>
       </section>
 
       <section id="paginaSolicitacoes" class="page-content" hidden>
