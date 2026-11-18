@@ -1,20 +1,27 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { pool } from "../database/conexao.js";
+import { LIMITES, textoValido, emailValido, senhaValida } from "../utils/validacao.js";
 
 export async function registrar(req, res) {
     try {
         const { nome, email, senha } = req.body;
 
-        if (!nome?.trim() || !email?.trim() || !senha) {
+        if (!textoValido(nome, LIMITES.nomeUsuario) || !email || !senha) {
             return res.status(400).json({
-                mensagem: "Preencha nome, e-mail e senha."
+                mensagem: `Preencha nome (até ${LIMITES.nomeUsuario} caracteres), e-mail e senha.`
             });
         }
 
-        if (senha.length < 6) {
+        if (!emailValido(email)) {
             return res.status(400).json({
-                mensagem: "A senha deve ter pelo menos 6 caracteres."
+                mensagem: "Informe um e-mail válido."
+            });
+        }
+
+        if (!senhaValida(senha)) {
+            return res.status(400).json({
+                mensagem: `A senha deve ter entre ${LIMITES.senhaMin} e ${LIMITES.senhaMax} caracteres.`
             });
         }
 
@@ -51,7 +58,7 @@ export async function login(req, res) {
     try {
         const { email, senha } = req.body;
 
-        if (!email || !senha) {
+        if (typeof email !== "string" || typeof senha !== "string" || !email || !senha) {
             return res.status(400).json({
                 mensagem: "Informe e-mail e senha."
             });
@@ -128,9 +135,15 @@ export async function atualizarMinhaConta(req, res) {
     try {
         const { nome, email, senha } = req.body;
 
-        if (!nome?.trim() || !email?.trim()) {
+        if (!textoValido(nome, LIMITES.nomeUsuario) || !email) {
             return res.status(400).json({
                 mensagem: "Nome e e-mail são obrigatórios."
+            });
+        }
+
+        if (!emailValido(email)) {
+            return res.status(400).json({
+                mensagem: "Informe um e-mail válido."
             });
         }
 
@@ -147,9 +160,9 @@ export async function atualizarMinhaConta(req, res) {
             });
         }
 
-        if (senha && senha.length < 6) {
+        if (senha && !senhaValida(senha)) {
             return res.status(400).json({
-                mensagem: "A senha deve ter pelo menos 6 caracteres."
+                mensagem: `A senha deve ter entre ${LIMITES.senhaMin} e ${LIMITES.senhaMax} caracteres.`
             });
         }
 
@@ -193,7 +206,7 @@ export async function atualizarMinhaConta(req, res) {
 export async function excluirMinhaConta(req, res) {
     try {
         const { senha } = req.body;
-        if (!senha) return res.status(400).json({ mensagem: "Informe sua senha para confirmar a exclusão." });
+        if (!senha || typeof senha !== "string") return res.status(400).json({ mensagem: "Informe sua senha para confirmar a exclusão." });
 
         const [usuarios] = await pool.query(
             "SELECT senha FROM usuarios WHERE id = ?", [req.usuario.id]

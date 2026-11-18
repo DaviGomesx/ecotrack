@@ -1,14 +1,27 @@
 
 import { pool } from "../database/conexao.js";
+import { LIMITES, textoValido, idValido } from "../utils/validacao.js";
 
 // Verifica os campos obrigatórios
-function dadosValidos({ nome, endereco, materiais, horario }) {
-    return Boolean(
-        nome?.trim() &&
-        endereco?.trim() &&
-        materiais?.trim() &&
-        horario?.trim()
+function dadosValidos({ nome, endereco, materiais, horario, observacoes }) {
+    return (
+        textoValido(nome, LIMITES.nomePonto) &&
+        textoValido(endereco, LIMITES.endereco) &&
+        textoValido(materiais, LIMITES.materiais) &&
+        textoValido(horario, LIMITES.horario) &&
+        textoValido(observacoes, LIMITES.texto, { obrigatorio: false })
     );
+}
+
+const MENSAGEM_DADOS = `Preencha nome (até ${LIMITES.nomePonto}), endereço (até ${LIMITES.endereco}), materiais (até ${LIMITES.materiais}) e horário (até ${LIMITES.horario}). Observações: até ${LIMITES.texto} caracteres.`;
+
+// Garante que o parâmetro :id seja um inteiro positivo
+function validarId(req, res) {
+    if (!idValido(req.params.id)) {
+        res.status(400).json({ mensagem: "ID inválido." });
+        return false;
+    }
+    return true;
 }
 
 // Verifica se já existe outro ponto com mesmo nome e endereço
@@ -36,7 +49,12 @@ async function pontoDuplicado(nome, endereco, id = null) {
 // LISTAR E PESQUISAR PONTOS
 export async function listarPontos(req, res) {
     try {
-        const { busca = "", material = "" } = req.query;
+        const busca = typeof req.query.busca === "string" ? req.query.busca : "";
+        const material = typeof req.query.material === "string" ? req.query.material : "";
+
+        if (busca.length > LIMITES.endereco || material.length > LIMITES.materiais) {
+            return res.status(400).json({ mensagem: "Termo de pesquisa muito longo." });
+        }
 
         let sql = `
             SELECT id, nome, endereco, materiais, horario, observacoes
@@ -81,6 +99,7 @@ export async function listarPontos(req, res) {
 
 // BUSCAR UM PONTO PELO ID
 export async function buscarPonto(req, res) {
+    if (!validarId(req, res)) return;
     try {
         const [pontos] = await pool.query(
             `SELECT id, nome, endereco, materiais, horario, observacoes
@@ -113,12 +132,12 @@ export async function criarPonto(req, res) {
             endereco,
             materiais,
             horario,
-            observacoes = ""
+            observacoes
         } = req.body;
 
         if (!dadosValidos(req.body)) {
             return res.status(400).json({
-                mensagem: "Preencha nome, endereço, materiais e horário."
+                mensagem: MENSAGEM_DADOS
             });
         }
 
@@ -140,7 +159,7 @@ export async function criarPonto(req, res) {
                 endereco.trim(),
                 materiais.trim(),
                 horario.trim(),
-                observacoes.trim(),
+                (observacoes || "").trim(),
                 req.usuario.id
             ]
         );
@@ -160,18 +179,19 @@ export async function criarPonto(req, res) {
 
 // ATUALIZAR PONTO
 export async function atualizarPonto(req, res) {
+    if (!validarId(req, res)) return;
     try {
         const {
             nome,
             endereco,
             materiais,
             horario,
-            observacoes = ""
+            observacoes
         } = req.body;
 
         if (!dadosValidos(req.body)) {
             return res.status(400).json({
-                mensagem: "Preencha nome, endereço, materiais e horário."
+                mensagem: MENSAGEM_DADOS
             });
         }
 
@@ -198,7 +218,7 @@ export async function atualizarPonto(req, res) {
                 endereco.trim(),
                 materiais.trim(),
                 horario.trim(),
-                observacoes.trim(),
+                (observacoes || "").trim(),
                 req.params.id
             ]
         );
@@ -223,6 +243,7 @@ export async function atualizarPonto(req, res) {
 
 // EXCLUIR PONTO
 export async function excluirPonto(req, res) {
+    if (!validarId(req, res)) return;
     try {
         const [resultado] = await pool.query(
             "DELETE FROM pontos_coleta WHERE id = ?",

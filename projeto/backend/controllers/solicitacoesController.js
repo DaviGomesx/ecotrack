@@ -1,10 +1,23 @@
 import { pool } from "../database/conexao.js";
+import { LIMITES, textoValido, telefoneValido, idValido } from "../utils/validacao.js";
 
 export async function criarSolicitacao(req, res) {
   try {
     const { nome_ponto, endereco, cidade, materiais, horario, telefone, detalhes } = req.body;
-    if (![nome_ponto, endereco, cidade, materiais, horario].every(v => typeof v === "string" && v.trim())) {
-      return res.status(400).json({ mensagem: "Preencha nome do local, endereço, cidade, materiais e horário." });
+    if (
+      !textoValido(nome_ponto, LIMITES.nomePonto) ||
+      !textoValido(endereco, LIMITES.endereco) ||
+      !textoValido(cidade, LIMITES.cidade) ||
+      !textoValido(materiais, LIMITES.materiaisSolicitacao) ||
+      !textoValido(horario, LIMITES.horario)
+    ) {
+      return res.status(400).json({ mensagem: "Preencha nome do local, endereço, cidade, materiais e horário respeitando os limites de tamanho." });
+    }
+    if (!telefoneValido(telefone) || !textoValido(telefone, LIMITES.telefone, { obrigatorio: false })) {
+      return res.status(400).json({ mensagem: "Telefone inválido." });
+    }
+    if (!textoValido(detalhes, LIMITES.texto, { obrigatorio: false })) {
+      return res.status(400).json({ mensagem: `Os detalhes devem ter até ${LIMITES.texto} caracteres.` });
     }
     const [usuarios] = await pool.query("SELECT nome, email FROM usuarios WHERE id = ?", [req.usuario.id]);
     if (!usuarios.length) return res.status(404).json({ mensagem: "Usuário não encontrado." });
@@ -48,6 +61,7 @@ export async function listarSolicitacoes(req, res) {
 export async function atualizarStatusSolicitacao(req, res) {
   try {
     const { status } = req.body;
+    if (!idValido(req.params.id)) return res.status(400).json({ mensagem: "ID inválido." });
     if (!["pendente", "em análise", "aprovada", "recusada"].includes(status)) return res.status(400).json({ mensagem: "Status inválido." });
     const [result] = await pool.query("UPDATE solicitacoes_pontos SET status = ? WHERE id = ?", [status, req.params.id]);
     if (!result.affectedRows) return res.status(404).json({ mensagem: "Sugestão não encontrada." });
@@ -61,6 +75,7 @@ export async function atualizarStatusSolicitacao(req, res) {
 
 export async function excluirMinhaSolicitacao(req, res) {
   try {
+    if (!idValido(req.params.id)) return res.status(400).json({ mensagem: "ID inválido." });
     if (req.usuario?.perfil === "admin") {
       return res.status(403).json({ mensagem: "Administradores não podem excluir solicitações pelo histórico de clientes." });
     }

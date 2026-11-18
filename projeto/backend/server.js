@@ -1,28 +1,8 @@
-import express from "express";
-import cors from "cors";
 import "dotenv/config";
+import app from "./app.js";
 import { testarConexao } from "./database/conexao.js";
-import authRoutes from "./routes/authRoutes.js";
-import pontosRoutes from "./routes/pontosRoutes.js";
-import solicitacoesRoutes from "./routes/solicitacoesRoutes.js";
 
-const app = express();
 const PORT = process.env.PORT || 3000;
-
-app.use(cors());
-app.use(express.json());
-
-app.get("/api/health", (req, res) => {
-    res.json({ mensagem: "API EcoTrack funcionando!" });
-});
-
-app.use("/api/auth", authRoutes);
-app.use("/api/pontos", pontosRoutes);
-app.use("/api/solicitacoes", solicitacoesRoutes);
-
-app.use((req, res) => {
-    res.status(404).json({ mensagem: "Rota não encontrada." });
-});
 
 async function garantirTabelaSolicitacoes() {
     // Garante a tabela mesmo quando o usuário atualizou o código, mas esqueceu

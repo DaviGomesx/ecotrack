@@ -43,15 +43,15 @@ Após realizar o login, o usuário acessa uma interface com navegação lateral,
 
 A navegação é adaptável a computadores e dispositivos móveis.
 
-## Novas funcionalidades: sugestões de pontos e painel administrativo
+### 4.1 Sugestões de pontos e painel administrativo
 
-### Área do usuário (cliente)
+#### Área do usuário (cliente)
 - A navegação lateral inclui **Sugerir um ponto**.
 - O formulário permite informar nome do local, endereço completo, cidade/UF, materiais recebidos, horário de funcionamento, telefone do local (opcional) e detalhes adicionais (opcional).
 - Ao enviar, a sugestão é registrada no banco de dados e fica disponível para análise dos administradores.
 - O sistema associa automaticamente à sugestão o nome e o e-mail da conta autenticada. O usuário não precisa preencher novamente seus dados de contato.
 
-### Área administrativa
+#### Área administrativa
 - A navegação lateral exibe **Solicitações recebidas** somente para contas com perfil `admin`.
 - Clientes têm a opção **Minhas solicitações**, com a lista de sugestões que enviaram, data de envio, status atual e uma explicação do andamento. A API filtra os registros pelo ID do usuário autenticado, sem permitir consultar solicitações de outras contas.
 - Cada solicitação mostra os dados do local sugerido, o nome e o e-mail do usuário que enviou (com link para contato por e-mail), além do status.
@@ -59,17 +59,15 @@ A navegação é adaptável a computadores e dispositivos móveis.
 - O gerenciamento de pontos permanece restrito a administradores: cadastrar, editar e excluir pontos na tela **Pontos de coleta**.
 - As permissões são verificadas também no backend; esconder um item no menu não substitui a autenticação e autorização das rotas.
 
-### Banco de dados e atualização
+#### Banco de dados e atualização
 
 Para bancos já existentes, execute uma vez o arquivo `projeto/sql/migracao_solicitacoes.sql` no MySQL (por exemplo, pelo Workbench). A tabela `solicitacoes_pontos` guarda os dados do local sugerido, o identificador do usuário, uma cópia do nome/e-mail no momento do envio, status e data de criação. A cópia dos dados de contato preserva a informação de quem enviou mesmo se o usuário alterar o perfil posteriormente.
 
 Para instalações novas, o arquivo `projeto/sql/ecotrack.sql` também cria essa tabela. Depois, reinicie o backend com `npm start` e atualize o frontend no navegador (`Ctrl + F5`). Não é necessário instalar dependências novas.
 
-### Rotas da API adicionadas
-- `POST /api/solicitacoes` — usuário autenticado envia uma sugestão.
-- `GET /api/solicitacoes/minhas` — usuário autenticado consulta somente as próprias solicitações e seu histórico/status.
-- `GET /api/solicitacoes` — somente administrador lista as sugestões.
-- `PATCH /api/solicitacoes/:id` — somente administrador atualiza o status.
+#### Rotas da API
+
+As rotas de sugestões estão listadas na seção 12.
 
 ## 5. Tipos de usuários e permissões
 
@@ -118,7 +116,7 @@ As permissões administrativas são verificadas diretamente no back-end, utiliza
 
 Todas as operações administrativas passam pela API, que verifica a autenticidade do token e o nível de acesso do usuário antes de permitir alterações.
 
-## 6. Funcionalidades principais
+## 7. Funcionalidades principais
 
 - Cadastro de usuários.
 - Login e autenticação.
@@ -133,7 +131,7 @@ Todas as operações administrativas passam pela API, que verifica a autenticida
 - Exclusão de pontos de coleta.
 - Atualização dos dados da própria conta.
 
-## 7. Tecnologias utilizadas
+## 8. Tecnologias utilizadas
 
 ### Front-end
 - HTML5
@@ -159,12 +157,13 @@ Todas as operações administrativas passam pela API, que verifica a autenticida
 - Git
 - GitHub
 
-## 8. Estrutura do projeto
+## 9. Estrutura do projeto
 
 ```text
 ecotrack/
 │
 ├── README.md
+├── .gitignore
 │
 └── projeto/
     │
@@ -177,31 +176,39 @@ ecotrack/
     │   ├── .env.example
     │   ├── package.json
     │   ├── package-lock.json
-    │   ├── server.js
+    │   ├── app.js                    (configuração do Express e rotas)
+    │   ├── server.js                 (conexão com o MySQL e início do servidor)
     │   │
     │   ├── routes/
     │   │   ├── authRoutes.js
-    │   │   └── pontosRoutes.js
+    │   │   ├── pontosRoutes.js
+    │   │   └── solicitacoesRoutes.js
     │   │
     │   ├── controllers/
     │   │   ├── authController.js
-    │   │   └── pontosController.js
+    │   │   ├── pontosController.js
+    │   │   └── solicitacoesController.js
     │   │
     │   ├── middlewares/
     │   │   └── autenticacao.js
     │   │
-    │   └── database/
-    │       └── conexao.js
+    │   ├── utils/
+    │   │   └── validacao.js          (validação de formatos e limites)
+    │   │
+    │   ├── database/
+    │   │   └── conexao.js
+    │   │
+    │   └── tests/
+    │       └── autorizacao.test.js
     │
-    ├── sql/
-    │   └── ecotrack.sql
-    │
-    └── .gitignore
+    └── sql/
+        ├── ecotrack.sql
+        └── migracao_solicitacoes.sql
 ```
 
-## 9. Banco de dados
+## 10. Banco de dados
 
-O sistema utiliza MySQL como banco de dados relacional, com duas tabelas principais:
+O sistema utiliza MySQL como banco de dados relacional, com três tabelas (`usuarios`, `pontos_coleta` e `solicitacoes_pontos`). As duas principais são:
 
 ### Tabela usuarios
 
@@ -240,13 +247,15 @@ O script responsável pela criação do banco de dados está disponível em:
 
 `projeto/sql/ecotrack.sql`
 
-## 10. Autenticação e segurança
+## 11. Autenticação e segurança
 
 O EcoTrack utiliza autenticação baseada em JWT (JSON Web Token).
 
 Após realizar o login corretamente, o sistema gera um token com validade de quatro horas, contendo a identificação e o perfil do usuário.
 
-O middleware de autenticação verifica o token enviado nas requisições protegidas.
+O middleware de autenticação verifica a assinatura e a validade do token enviado nas requisições protegidas e, **a cada requisição, consulta o usuário no MySQL**. O perfil usado nas permissões é sempre o atual, gravado no banco, e não o que estava no token: se a conta for excluída, o token deixa de funcionar (HTTP 401); se o perfil for alterado (por exemplo, de `admin` para `usuario`), a mudança vale imediatamente, sem precisar esperar o token expirar.
+
+O backend também valida formato e tamanho dos campos (e-mail válido, senha de 6 a 72 caracteres, limites de tamanho compatíveis com as colunas do banco, telefone, IDs numéricos nas rotas), retornando HTTP 400 quando os dados são inválidos.
 
 O controle de permissões funciona da seguinte maneira:
 
@@ -257,7 +266,7 @@ O controle de permissões funciona da seguinte maneira:
 
 As senhas são protegidas utilizando bcryptjs, e as consultas ao banco utilizam parâmetros para evitar a inserção direta de dados nas instruções SQL.
 
-## 11. Rotas principais da API
+## 12. Rotas principais da API
 
 ### Autenticação e conta
 
@@ -267,6 +276,8 @@ As senhas são protegidas utilizando bcryptjs, e as consultas ao banco utilizam 
 | POST | `/api/auth/login` | Realizar login |
 | GET | `/api/auth/minha-conta` | Consultar dados da conta |
 | PUT | `/api/auth/minha-conta` | Atualizar dados da conta |
+
+| DELETE | `/api/auth/minha-conta` | Excluir a própria conta (exige a senha no corpo) |
 
 ### Pontos de coleta
 
@@ -278,13 +289,23 @@ As senhas são protegidas utilizando bcryptjs, e as consultas ao banco utilizam 
 | PUT | `/api/pontos/:id` | Administrador |
 | DELETE | `/api/pontos/:id` | Administrador |
 
+### Sugestões de pontos (solicitações)
+
+| Método | Rota | Permissão |
+|---|---|---|
+| POST | `/api/solicitacoes` | Usuário autenticado |
+| GET | `/api/solicitacoes/minhas` | Usuário autenticado (somente as próprias) |
+| DELETE | `/api/solicitacoes/:id` | Cliente dono da solicitação |
+| GET | `/api/solicitacoes` | Administrador |
+| PATCH | `/api/solicitacoes/:id` | Administrador (atualiza o status) |
+
 ### Verificação da API
 
 | Método | Rota | Descrição |
 |---|---|---|
 | GET | `/api/health` | Verificar se a API está funcionando |
 
-## 12. Instalação e execução
+## 13. Instalação e execução
 
 ### Pré-requisitos
 
@@ -313,7 +334,7 @@ Abra o MySQL Workbench e execute o script:
 
 `projeto/sql/ecotrack.sql`
 
-Esse arquivo cria o banco de dados EcoTrack, as tabelas necessárias e registros iniciais de demonstração.
+Esse arquivo cria o banco de dados EcoTrack, as tabelas necessárias (incluindo `solicitacoes_pontos`) e registros iniciais de demonstração.
 
 ### Passo 3 — Instalar as dependências
 
@@ -331,7 +352,7 @@ npm install
 
 ### Passo 4 — Configurar as variáveis de ambiente
 
-Crie uma cópia do arquivo `.env.example` com o nome `.env`.
+Crie uma cópia do arquivo `.env.example` (na pasta `projeto/backend`) com o nome `.env`.
 
 No terminal, execute:
 
@@ -379,7 +400,7 @@ Abra o arquivo abaixo no navegador:
 
 Com o servidor e o banco de dados funcionando, será possível utilizar o sistema.
 
-## 13. Como testar o sistema
+## 14. Como testar o sistema
 
 ### Teste de cadastro e login
 
@@ -403,7 +424,7 @@ WHERE email = 'SEU_EMAIL';
 
 Substitua `SEU_EMAIL` pelo endereço utilizado no cadastro.
 
-Em seguida, faça login novamente para receber um token com o perfil atualizado.
+Como o backend consulta o perfil atual no banco a cada requisição, a alteração vale imediatamente; ainda assim, recomenda-se sair e entrar novamente para que a interface exiba o perfil atualizado.
 
 ### Teste do CRUD
 
@@ -416,15 +437,34 @@ Com a conta administrativa, teste:
 
 Também é possível verificar o bloqueio das operações administrativas utilizando uma conta de usuário comum.
 
-## 14. Segurança e cuidados
+### Testes automatizados de autorização
+
+O backend possui testes (`projeto/backend/tests/autorizacao.test.js`) que verificam, sem precisar de MySQL (o banco é simulado em memória):
+
+- bloqueio sem token ou com token de assinatura inválida;
+- bloqueio de operações administrativas para usuário comum;
+- revalidação do perfil no banco (token antigo de admin rebaixado, token de conta excluída, perfil promovido);
+- cliente só consulta e exclui as próprias solicitações, sem alcançar registros de outros usuários;
+- validação de formatos e limites dos campos.
+
+Para executar:
+
+```bash
+cd projeto/backend
+npm install
+npm test
+```
+
+## 15. Segurança e cuidados
 
 - O arquivo `.env` não deve ser enviado ao GitHub.
 - Não devem ser compartilhadas senhas ou credenciais privadas.
 - A pasta `node_modules` não deve ser versionada.
 - O arquivo `.env.example` deve conter apenas valores ilustrativos.
-- As permissões são verificadas no back-end, e não somente na interface.
+- As permissões são verificadas no back-end (com o perfil atual lido do MySQL a cada requisição), e não somente na interface.
+- O `.gitignore` fica na raiz do repositório e ignora `.env`, `node_modules/` e `.DS_Store`.
 
-## 15. Desenvolvimento e versionamento
+## 16. Desenvolvimento e versionamento
 
 O desenvolvimento do EcoTrack é realizado em um único repositório no GitHub:
 
@@ -434,15 +474,16 @@ O histórico de commits é utilizado para registrar as alterações, melhorias e
 
 ---
 
-**EcoTrack — Facilitando a localização de pontos de coleta e incentivando o descarte correto de materiais recicláveis.** 🌱
-### Correção e diagnóstico das solicitações
+## 17. Informações complementares
+
+### Diagnóstico das solicitações
 
 Ao iniciar, o backend verifica a existência da tabela `solicitacoes_pontos` e a cria caso esteja ausente (sem apagar registros existentes). A conta configurada no MySQL precisa ter permissão `CREATE TABLE`. Também é possível executar manualmente `projeto/sql/migracao_solicitacoes.sql` no banco definido em `DB_NAME` no `.env`.
 
 Se o envio ou a listagem falhar, confira o terminal onde o backend está rodando: os erros agora exibem o código MySQL e a operação (`SOLICITACOES/CRIAR` ou `SOLICITACOES/LISTAR`). Confirme também que o usuário está autenticado e, para abrir a área de solicitações, que sua coluna `usuarios.perfil` contém exatamente `admin`. Após atualizar o projeto, encerre e inicie novamente o backend.
 
 
-## Exclusão de conta e ajustes de interface
+### Exclusão de conta e ajustes de interface
 
 Na tela **Meu perfil**, o usuário pode solicitar a exclusão definitiva da própria conta. A ação exige confirmação explícita e a senha atual. O backend valida a senha com bcrypt antes de excluir o registro. A rota autenticada é `DELETE /api/auth/minha-conta`, com corpo JSON `{ "senha": "..." }`.
 
@@ -453,4 +494,8 @@ O botão de acesso ao perfil no topo identifica claramente o tipo de conta (**Ad
 
 ### Perfil no topo e exclusão de solicitações
 - O botão **Meu perfil**, no canto superior direito, identifica o nome e o tipo de conta (Administrador ou Cliente) e abre a página de perfil.
-- Clientes podem excluir uma solicitação no histórico **Minhas solicitações**. A rota `DELETE /solicitacoes/:id` exige autenticação e apaga somente o registro cujo `usuario_id` corresponde ao usuário autenticado; solicitações de outras contas não podem ser removidas.
+- Clientes podem excluir uma solicitação no histórico **Minhas solicitações**. A rota `DELETE /api/solicitacoes/:id` exige autenticação e apaga somente o registro cujo `usuario_id` corresponde ao usuário autenticado; solicitações de outras contas não podem ser removidas.
+
+---
+
+**EcoTrack — Facilitando a localização de pontos de coleta e incentivando o descarte correto de materiais recicláveis.** 🌱
